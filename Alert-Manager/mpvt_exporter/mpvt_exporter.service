@@ -1,0 +1,15 @@
+[Unit]
+Description=MPVT Daemon Exporter
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/shivani/sf_MPVT-CTY-main/MPVT-CTY-main
+ExecStart=/usr/bin/python3 /home/shivani/sf_MPVT-CTY-main/MPVT-CTY-main/mpvt_exporter.py
+Restart=always
+RestartSec=5
+User=shivani
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Error</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h2 class="error">Error</h2>
+    <div class="info-block">
+      <span class="info-label">Message:</span> {{ message }}
+    </div>
+    {% if back_url %}
+      <div style="margin-top: 20px;">
+        <a href="{{ back_url }}" style="color: #03b1fc;">Go Back</a>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>

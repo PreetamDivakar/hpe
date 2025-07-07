@@ -1,0 +1,22 @@
+groups:
+- name: monitoring_alerts
+  rules:
+  # Alert if a link between two nodes is down
+  - alert: LinkStatusDown
+    expr: link_status == 0
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "Link down between {{ $labels.source }} and {{ $labels.target }}"
+      description: "The data link from {{ $labels.source }} to {{ $labels.target }} is down (link_status=0)."
+
+  # Alert if a node is down (mainStat = 0)
+  - alert: NodeDown
+    expr: node_status == 0
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "Node {{ $labels.node }} is down"
+      description: "Node {{ $labels.node }} has reported a down status (node_status=0) for more than 30 seconds."

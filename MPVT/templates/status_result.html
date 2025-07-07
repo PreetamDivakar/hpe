@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Service Action Result - {{ response.component }}</title>
+  <style>
+    @font-face {
+      font-family: 'Metric';
+      src: url('https://hpefonts.s3.amazonaws.com/MetricWeb/MetricWeb-Regular.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: 'Metric', sans-serif;
+      margin: 0;
+      padding: 40px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: auto;
+      background-color: #1e1e1e;
+      padding: 30px;
+      border-radius: 8px;
+    }
+
+    h2, h3, h4 {
+      text-align: center;
+    }
+
+    .success { color: lightgreen; }
+    .error { color: red; }
+
+    .info-label {
+      font-weight: bold;
+      display: inline-block;
+      width: 120px;
+    }
+
+    .info-block {
+      margin-bottom: 12px;
+      line-height: 1.6;
+      text-align: left;
+    }
+
+    .log-entry {
+      white-space: pre-wrap;
+      font-family: 'Metric', monospace;
+      line-height: 1.6;
+      word-spacing: 0.05em;
+      margin-bottom: 8px;
+      text-align: left;
+      padding: 6px 12px;
+    }
+
+    #log-container {
+      background: #2a2a2a;
+      padding: 10px;
+      border-radius: 6px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 20px;
+      border: 1px solid #333;
+    }
+
+    .highlight {
+      background: yellow;
+      color: black;
+      font-weight: bold;
+    }
+
+    input[type="checkbox"],
+    input[type="datetime-local"],
+    input[type="text"] {
+      margin: 8px 4px;
+      padding: 6px;
+      background-color: #1e1e1e;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 4px;
+      font-family: 'Metric', sans-serif;
+    }
+
+    ul {
+      list-style-type: disc;
+      padding-left: 40px;
+      text-align: left;
+      line-height: 2;
+    }
+
+    li label {
+      cursor: pointer;
+    }
+
+  .filters-section {
+    margin-top: 30px;
+  }
+
+  .filters-section ul li {
+    margin-bottom: 24px;
+  }
+
+  </style>
+
+  <script>
+    function filterLogs() {
+      const checkboxes = document.querySelectorAll("input[type=checkbox]");
+      const logEntries = document.querySelectorAll(".log-entry");
+      const startTimeInput = document.getElementById("start-time").value;
+      const endTimeInput = document.getElementById("end-time").value;
+      const searchTerm = document.getElementById("log-search").value.toLowerCase();
+
+      const start = startTimeInput ? new Date(startTimeInput) : null;
+      const end = endTimeInput ? new Date(endTimeInput) : null;
+
+      logEntries.forEach(entry => {
+        const type = entry.getAttribute("data-type");
+        const timestampStr = entry.getAttribute("data-timestamp");
+        const entryTime = timestampStr ? new Date(timestampStr.replace(" ", "T")) : null;
+        const isChecked = [...checkboxes].some(cb => cb.value === type && cb.checked);
+
+        let inRange = true;
+        if (start && end && entryTime) {
+          inRange = entryTime >= start && entryTime <= end;
+        }
+
+        let matchSearch = true;
+        if (searchTerm) {
+          matchSearch = entry.textContent.toLowerCase().includes(searchTerm);
+        }
+
+        entry.innerHTML = entry.textContent;
+
+        if (searchTerm && matchSearch) {
+          const regex = new RegExp(`(${searchTerm})`, 'gi');
+          entry.innerHTML = entry.textContent.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        entry.style.display = (isChecked && inRange && matchSearch) ? "block" : "none";
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <h2>Status: <span class="{{ response.status }}">{{ response.status | capitalize }}</span></h2>
+
+    <div class="info-block"><span class="info-label">Component:</span> {{ response.component }}</div>
+    <div class="info-block"><span class="info-label">Action:</span> {{ response.action }}</div>
+    <div class="info-block"><span class="info-label">Message:</span> {{ response.message }}</div>
+    <div class="info-block"><span class="info-label">Timestamp:</span> {{ response.timestamp | datetimeformat }}</div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+      <h3>Log Filters</h3>
+
+      <ul>
+        <li>
+          <label><strong>Log Type:</strong></label><br>
+          {% for level, color in response.color_map.items() %}
+            <label>
+              <input type="checkbox" value="{{ level }}" checked onchange="filterLogs()"> {{ level }}
+            </label>
+          {% endfor %}
+        </li>
+
+        <li>
+          <label><strong>Date/Time Range:</strong></label><br>
+          Start: <input type="datetime-local" id="start-time" onchange="filterLogs()">
+          End: <input type="datetime-local" id="end-time" onchange="filterLogs()">
+        </li>
+
+        <li>
+          <label for="log-search"><strong>Search Logs:</strong></label><br>
+          <input type="text" id="log-search" placeholder="Search logs..." oninput="filterLogs()">
+        </li>
+      </ul>
+    </div>
+
+    <!-- Logs -->
+    <h3>Recent Logs (using journalctl)</h3>
+    <div id="log-container">
+      {% for entry in response.logs %}
+        {{ entry|safe }}
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>

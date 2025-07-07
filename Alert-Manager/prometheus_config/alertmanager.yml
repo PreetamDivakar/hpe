@@ -1,0 +1,16 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'shastryshivani930@gmail.com'
+  smtp_auth_username: 'shastryshivani930@gmail.com'
+  smtp_auth_password: ' ' 
+  smtp_require_tls: true
+
+route:
+  receiver: 'gmail-notifications'
+
+receivers:
+  - name: 'gmail-notifications'
+    email_configs:
+      - to: 'shastryshivani930@gmail.com'
+        send_resolved: true

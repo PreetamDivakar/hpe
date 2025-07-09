@@ -20,3 +20,18 @@ groups:
     annotations:
       summary: "Node {{ $labels.node }} is down"
       description: "Node {{ $labels.node }} has reported a down status (node_status=0) for more than 30 seconds."
+    
+  # Alert if any one of the  node is down or link is down 
+- name: unified_critical_alerts
+  rules:
+  - alert: AnyNodeOrLinkDown
+    expr: (node_status == 0) or (link_status == 0)
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "A node or link is down"
+      description: |
+        Detected a failure:
+        {{ if eq $labels.__name__ "node_status" }}Node {{ $labels.node }} is down.{{ end }}
+        {{ if eq $labels.__name__ "link_status" }}Link from {{ $labels.source }} to {{ $labels.target }} is down.{{ end }}
